@@ -76,6 +76,7 @@ async def _seed_defaults() -> None:
                 "description": "Газомасляный амортизатор для передней подвески. Обеспечивает комфортное управление и стабильность.",
                 "price": "4590.00",
                 "stock_quantity": 24,
+                "image_url": "https://picsum.photos/seed/SUS-KYB-001/600/400",
                 "category_id": cat_suspension.category_id,
                 "manufacturer_id": mfr_kyb.manufacturer_id,
                 "cars": [car_camry, car_3series],
@@ -86,6 +87,7 @@ async def _seed_defaults() -> None:
                 "description": "Однотрубный газовый амортизатор задней оси. Повышенный ресурс, спортивные характеристики.",
                 "price": "3990.00",
                 "stock_quantity": 18,
+                "image_url": "https://picsum.photos/seed/SUS-KYB-002/600/400",
                 "category_id": cat_suspension.category_id,
                 "manufacturer_id": mfr_kyb.manufacturer_id,
                 "cars": [car_camry],
@@ -96,6 +98,7 @@ async def _seed_defaults() -> None:
                 "description": "Высокоэффективные тормозные колодки из органического состава. Минимальный шум и пыль.",
                 "price": "3200.00",
                 "stock_quantity": 32,
+                "image_url": "https://picsum.photos/seed/BRK-BRE-001/600/400",
                 "category_id": cat_brakes.category_id,
                 "manufacturer_id": mfr_brembo.manufacturer_id,
                 "cars": [car_camry, car_3series],
@@ -106,6 +109,7 @@ async def _seed_defaults() -> None:
                 "description": "Вентилируемый тормозной диск с антикоррозийным покрытием. Улучшенное охлаждение.",
                 "price": "5800.00",
                 "stock_quantity": 14,
+                "image_url": "https://picsum.photos/seed/BRK-BRE-002/600/400",
                 "category_id": cat_brakes.category_id,
                 "manufacturer_id": mfr_brembo.manufacturer_id,
                 "cars": [car_3series],
@@ -116,6 +120,7 @@ async def _seed_defaults() -> None:
                 "description": "Иридиевые свечи зажигания с улучшенным воспламенением. Ресурс до 100 000 км.",
                 "price": "2400.00",
                 "stock_quantity": 56,
+                "image_url": "https://picsum.photos/seed/ENG-NGK-001/600/400",
                 "category_id": cat_engine.category_id,
                 "manufacturer_id": mfr_ngk.manufacturer_id,
                 "cars": [car_camry, car_vesta],
@@ -126,6 +131,7 @@ async def _seed_defaults() -> None:
                 "description": "Фильтр тонкой очистки масла. Двойное уплотнение, антидренажный клапан.",
                 "price": "420.00",
                 "stock_quantity": 120,
+                "image_url": "https://picsum.photos/seed/ENG-MAN-001/600/400",
                 "category_id": cat_engine.category_id,
                 "manufacturer_id": mfr_mann.manufacturer_id,
                 "cars": [car_camry, car_3series, car_vesta],
@@ -136,6 +142,7 @@ async def _seed_defaults() -> None:
                 "description": "Фильтр очистки воздуха двигателя. Высокая степень фильтрации, долгий ресурс.",
                 "price": "680.00",
                 "stock_quantity": 88,
+                "image_url": "https://picsum.photos/seed/ENG-MAN-002/600/400",
                 "category_id": cat_engine.category_id,
                 "manufacturer_id": mfr_mann.manufacturer_id,
                 "cars": [car_vesta],
@@ -146,6 +153,7 @@ async def _seed_defaults() -> None:
                 "description": "Стартерный аккумулятор с кальциевой технологией. Низкий саморазряд, необслуживаемый.",
                 "price": "8900.00",
                 "stock_quantity": 9,
+                "image_url": "https://picsum.photos/seed/ELC-BOS-001/600/400",
                 "category_id": cat_electric.category_id,
                 "manufacturer_id": mfr_bosch.manufacturer_id,
                 "cars": [car_camry, car_3series, car_vesta],
@@ -169,6 +177,9 @@ async def _seed_defaults() -> None:
                     )
                     if compat_res.scalar_one_or_none() is None:
                         db.add(ProductCarCompatibility(product_id=product.product_id, car_id=car.car_id))
+            else:
+                if product.image_url is None and pdata.get("image_url"):
+                    product.image_url = pdata["image_url"]
 
         await db.commit()
 
