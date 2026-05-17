@@ -3,8 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from app.database import get_db
-from app.dependencies import get_current_user, require_admin
+from app.dependencies import get_db, get_current_user, require_admin
 from app.models import Service, ServiceRequest
 from app.schemas import ServiceOut, ServiceRequestCreate, ServiceRequestOut, ServiceRequestStatusUpdate
 
@@ -62,7 +61,7 @@ async def create_request(
     )
     db.add(req)
     await db.commit()
-    await db.refresh(req, ["service"])
+    await db.refresh(req, ["service", "created_at"])
     return req
 
 
@@ -78,5 +77,5 @@ async def update_request_status(
         raise HTTPException(404, "Request not found")
     req.status = body.status
     await db.commit()
-    await db.refresh(req, ["service"])
+    await db.refresh(req, ["service", "created_at"])
     return req
