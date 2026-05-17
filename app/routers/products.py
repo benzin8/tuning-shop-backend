@@ -1,15 +1,23 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, require_admin
-from app.models import Product, ProductCarCompatibility
+from app.models import Product, ProductCarCompatibility, Category, PartManufacturer
 from app.schemas import ProductCreate, ProductUpdate, ProductOut, CompatibilityCreate, CompatibilityOut
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 _load = selectinload(Product.category), selectinload(Product.manufacturer)
+
+
+def _generate_sku(category_name: str, manufacturer_name: str) -> str:
+    cat = "".join(c for c in category_name if c.isalpha())[:3].upper() or "CAT"
+    mfr = "".join(c for c in manufacturer_name if c.isalpha())[:3].upper() or "MFR"
+    return f"{cat}-{mfr}-{uuid.uuid4().hex[:8].upper()}"
 
 
 @router.get("/", response_model=list[ProductOut])
@@ -52,7 +60,17 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/", response_model=ProductOut, status_code=201, dependencies=[Depends(require_admin)])
 async def create_product(data: ProductCreate, db: AsyncSession = Depends(get_db)):
-    product = Product(**data.model_dump())
+    sku = data.sku
+    if not sku:
+        cat_res = await db.execute(select(Category).where(Category.category_id == data.category_id))
+        cat = cat_res.scalar_one_or_none()
+        mfr_res = await db.execute(select(PartManufacturer).where(PartManufacturer.manufacturer_id == data.manufacturer_id))
+        mfr = mfr_res.scalar_one_or_none()
+        if not cat or not mfr:
+            raise HTTPException(status_code=404, detail="Category or manufacturer not found")
+        sku = _generate_sku(cat.category_name, mfr.manufacturer_name)
+
+    product = Product(**data.model_dump(exclude={"sku"}), sku=sku)
     db.add(product)
     await db.commit()
     result = await db.execute(

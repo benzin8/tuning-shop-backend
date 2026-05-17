@@ -87,7 +87,7 @@ class ManufacturerOut(BaseModel):
 class ProductCreate(BaseModel):
     category_id: int
     manufacturer_id: int
-    sku: str
+    sku: str | None = None
     product_name: str
     description: str | None = None
     image_url: str | None = None
