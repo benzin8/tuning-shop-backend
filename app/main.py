@@ -178,7 +178,7 @@ async def _seed_defaults() -> None:
                     if compat_res.scalar_one_or_none() is None:
                         db.add(ProductCarCompatibility(product_id=product.product_id, car_id=car.car_id))
             else:
-                if product.image_url is None and pdata.get("image_url"):
+                if pdata.get("image_url"):
                     product.image_url = pdata["image_url"]
 
         await db.commit()
