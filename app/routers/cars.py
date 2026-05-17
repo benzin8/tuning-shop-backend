@@ -27,6 +27,16 @@ async def create_brand(data: BrandCreate, db: AsyncSession = Depends(get_db)):
     return brand
 
 
+@router.delete("/brands/{brand_id}", status_code=204, dependencies=[Depends(require_admin)])
+async def delete_brand(brand_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Brand).where(Brand.brand_id == brand_id))
+    brand = result.scalar_one_or_none()
+    if not brand:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    await db.delete(brand)
+    await db.commit()
+
+
 # ── Models ────────────────────────────────────────────────────────────────────
 
 @router.get("/models", response_model=list[CarModelOut])
@@ -47,6 +57,16 @@ async def create_model(data: CarModelCreate, db: AsyncSession = Depends(get_db))
         select(CarModel).options(selectinload(CarModel.brand)).where(CarModel.model_id == model.model_id)
     )
     return result.scalar_one()
+
+
+@router.delete("/models/{model_id}", status_code=204, dependencies=[Depends(require_admin)])
+async def delete_model(model_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CarModel).where(CarModel.model_id == model_id))
+    model = result.scalar_one_or_none()
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+    await db.delete(model)
+    await db.commit()
 
 
 # ── Cars ──────────────────────────────────────────────────────────────────────
