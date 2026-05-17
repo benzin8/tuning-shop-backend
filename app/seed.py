@@ -22,10 +22,19 @@ async def _get_or_create(db, model, filter_kwargs, create_kwargs=None):
 async def _run_migrations() -> None:
     """Apply lightweight schema migrations that create_all cannot handle."""
     async with engine.begin() as conn:
-        await conn.execute(text(
-            "ALTER TABLE services ADD COLUMN IF NOT EXISTS "
-            "requires_gibdd BOOLEAN NOT NULL DEFAULT FALSE"
+        # Check if the column already exists in the services table
+        res = await conn.execute(text(
+            "SELECT COUNT(*) FROM information_schema.columns "
+            "WHERE table_schema = DATABASE() "
+            "AND table_name = 'services' "
+            "AND column_name = 'requires_gibdd'"
         ))
+        exists = res.scalar()
+        if not exists:
+            await conn.execute(text(
+                "ALTER TABLE services ADD COLUMN "
+                "requires_gibdd BOOLEAN NOT NULL DEFAULT FALSE"
+            ))
 
 
 async def seed() -> None:
