@@ -54,6 +54,10 @@ class UserUpdate(BaseModel):
     phone: str | None = None
 
 
+class UserRoleUpdate(BaseModel):
+    role_id: int
+
+
 # ── Category ──────────────────────────────────────────────────────────────────
 
 class CategoryCreate(BaseModel):
