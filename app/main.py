@@ -7,10 +7,10 @@ from sqlalchemy import select
 from app.database import engine, Base, AsyncSessionLocal
 from app.models import (
     Role, OrderStatus, Category, PartManufacturer,
-    Brand, CarModel, Car, Product, ProductCarCompatibility,
+    Brand, CarModel, Car, Product, ProductCarCompatibility, Service,
 )
-from app.routers import auth, users, products, categories, cars, orders
-from app.routers import roles
+from app.routers import auth, users, products, categories, cars, orders, roles
+from app.routers import services as services_router
 
 
 async def _get_or_create(db, model, filter_kwargs, create_kwargs=None):
@@ -183,6 +183,71 @@ async def _seed_defaults() -> None:
 
         await db.commit()
 
+        # Услуги тюнинга
+        services_data = [
+            {
+                "name": "Чип-тюнинг двигателя",
+                "description": "Перепрошивка ЭБУ для увеличения мощности, крутящего момента и улучшения отклика педали газа. Работаем с большинством марок и моделей.",
+                "price_from": 8000,
+                "duration": "2–4 часа",
+                "category": "Двигатель",
+            },
+            {
+                "name": "Установка спортивной подвески",
+                "description": "Монтаж резьбовых стоек, пружин, стабилизаторов. Настройка высоты и жёсткости под ваши задачи — трек или город.",
+                "price_from": 5000,
+                "duration": "3–5 часов",
+                "category": "Подвеска",
+            },
+            {
+                "name": "Монтаж выхлопной системы",
+                "description": "Замена штатного выхлопа на спортивный: прямоток, катбэк, даунпайп. Увеличение мощности и характерный звук.",
+                "price_from": 4000,
+                "duration": "2–3 часа",
+                "category": "Выхлоп",
+            },
+            {
+                "name": "Тормозной апгрейд",
+                "description": "Замена дисков, колодок и суппортов на спортивные аналоги. Прокачка тормозной системы и проверка геометрии.",
+                "price_from": 3500,
+                "duration": "1.5–3 часа",
+                "category": "Тормоза",
+            },
+            {
+                "name": "Антигравийная плёнка и оклейка",
+                "description": "Защита лакокрасочного покрытия антигравийной плёнкой PPF или декоративная оклейка виниловой плёнкой.",
+                "price_from": 12000,
+                "duration": "1–3 дня",
+                "category": "Кузов",
+            },
+            {
+                "name": "Установка мультимедиа и камер",
+                "description": "Замена штатной магнитолы, установка камер 360°, парктроников, видеорегистраторов и систем мониторинга слепых зон.",
+                "price_from": 2500,
+                "duration": "2–4 часа",
+                "category": "Электрика",
+            },
+            {
+                "name": "Промывка и настройка форсунок",
+                "description": "Ультразвуковая очистка форсунок, проверка производительности и при необходимости замена уплотнений.",
+                "price_from": 2000,
+                "duration": "1–2 часа",
+                "category": "Двигатель",
+            },
+            {
+                "name": "Развал-схождение (стенд)",
+                "description": "Точная регулировка углов установки колёс на 3D-стенде. Обязательна после замены элементов подвески или при неравномерном износе шин.",
+                "price_from": 1500,
+                "duration": "30–60 минут",
+                "category": "Подвеска",
+            },
+        ]
+
+        for sdata in services_data:
+            await _get_or_create(db, Service, {"name": sdata["name"]}, sdata)
+
+        await db.commit()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -213,6 +278,7 @@ app.include_router(products.router)
 app.include_router(categories.router)
 app.include_router(cars.router)
 app.include_router(orders.router)
+app.include_router(services_router.router)
 
 
 @app.get("/health")

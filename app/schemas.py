@@ -219,3 +219,36 @@ class OrderOut(BaseModel):
 
 class OrderStatusUpdate(BaseModel):
     status_id: int
+
+
+# ── Services ──────────────────────────────────────────────────────────────────
+
+class ServiceOut(BaseModel):
+    service_id: int
+    name: str
+    description: str | None
+    price_from: Decimal | None
+    duration: str | None
+    category: str | None
+    model_config = {"from_attributes": True}
+
+
+class ServiceRequestCreate(BaseModel):
+    service_id: int
+    car_info: str
+    notes: str | None = None
+
+
+class ServiceRequestOut(BaseModel):
+    request_id: int
+    service_id: int
+    car_info: str
+    notes: str | None
+    status: str
+    created_at: datetime
+    service: ServiceOut
+    model_config = {"from_attributes": True}
+
+
+class ServiceRequestStatusUpdate(BaseModel):
+    status: str

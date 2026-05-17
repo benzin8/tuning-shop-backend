@@ -31,6 +31,7 @@ class User(Base):
 
     role: Mapped["Role"] = relationship("Role", back_populates="users")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
+    service_requests: Mapped[list["ServiceRequest"]] = relationship("ServiceRequest", back_populates="user")
 
 
 class OrderStatus(Base):
@@ -155,3 +156,31 @@ class ProductCarCompatibility(Base):
 
     product: Mapped["Product"] = relationship("Product", back_populates="compatibilities")
     car: Mapped["Car"] = relationship("Car", back_populates="compatibilities")
+
+
+class Service(Base):
+    __tablename__ = "services"
+
+    service_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    price_from: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    duration: Mapped[str | None] = mapped_column(String(100))
+    category: Mapped[str | None] = mapped_column(String(100))
+
+    requests: Mapped[list["ServiceRequest"]] = relationship("ServiceRequest", back_populates="service")
+
+
+class ServiceRequest(Base):
+    __tablename__ = "service_requests"
+
+    request_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    service_id: Mapped[int] = mapped_column(ForeignKey("services.service_id"), nullable=False)
+    car_info: Mapped[str] = mapped_column(String(200), nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="new")
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    user: Mapped["User"] = relationship("User", back_populates="service_requests")
+    service: Mapped["Service"] = relationship("Service", back_populates="requests")
