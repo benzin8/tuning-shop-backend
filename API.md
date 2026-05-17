@@ -197,6 +197,23 @@ username=string&password=string
 
 ---
 
+## Roles
+
+### GET /roles/
+Список всех ролей. Публичный эндпоинт (авторизация не нужна).
+
+**Response 200:**
+```json
+[
+  { "role_id": 1, "role_name": "admin" },
+  { "role_id": 2, "role_name": "customer" }
+]
+```
+
+> Роли создаются автоматически при старте сервера. `role_id: 1` = admin, `role_id: 2` = customer.
+
+---
+
 ## Categories
 
 ### GET /categories/

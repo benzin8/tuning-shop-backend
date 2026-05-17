@@ -2,15 +2,34 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select
 
-from app.database import engine, Base
+from app.database import engine, Base, AsyncSessionLocal
+from app.models import Role, OrderStatus
 from app.routers import auth, users, products, categories, cars, orders
+from app.routers import roles
+
+
+async def _seed_defaults() -> None:
+    async with AsyncSessionLocal() as db:
+        for name in ("admin", "customer"):
+            res = await db.execute(select(Role).where(Role.role_name == name))
+            if res.scalar_one_or_none() is None:
+                db.add(Role(role_name=name))
+
+        for name in ("pending", "confirmed", "processing", "shipped", "delivered", "cancelled"):
+            res = await db.execute(select(OrderStatus).where(OrderStatus.status_name == name))
+            if res.scalar_one_or_none() is None:
+                db.add(OrderStatus(status_name=name))
+
+        await db.commit()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await _seed_defaults()
     yield
 
 
@@ -30,6 +49,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(roles.router)
 app.include_router(products.router)
 app.include_router(categories.router)
 app.include_router(cars.router)
