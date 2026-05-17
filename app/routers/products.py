@@ -1,12 +1,12 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, require_admin
-from app.models import Product, ProductCarCompatibility, Category, PartManufacturer, Car, CarModel
+from app.models import Product, ProductCarCompatibility, Category, PartManufacturer, Car, CarModel, OrderItem
 from app.schemas import ProductCreate, ProductUpdate, ProductOut, CompatibilityCreate, CompatibilityOut, CarOut
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -100,6 +100,19 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
     product = result.scalar_one_or_none()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    
+    # 1. Check if the product has already been ordered by any customers
+    order_check = await db.execute(select(OrderItem.item_id).where(OrderItem.product_id == product_id).limit(1))
+    if order_check.scalar() is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete product because it has been ordered in existing orders"
+        )
+    
+    # 2. Clean up compatibility mappings first to avoid database constraint errors
+    await db.execute(delete(ProductCarCompatibility).where(ProductCarCompatibility.product_id == product_id))
+    
+    # 3. Delete the product itself
     await db.delete(product)
     await db.commit()
 
