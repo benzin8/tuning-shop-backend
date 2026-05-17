@@ -111,6 +111,7 @@ class ProductOut(BaseModel):
     image_url: str | None
     price: Decimal
     stock_quantity: int
+    is_active: bool
     category: CategoryOut
     manufacturer: ManufacturerOut
     model_config = {"from_attributes": True}
