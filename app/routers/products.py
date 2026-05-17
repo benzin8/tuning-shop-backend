@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, require_admin
-from app.models import Product, ProductCarCompatibility, Category, PartManufacturer
-from app.schemas import ProductCreate, ProductUpdate, ProductOut, CompatibilityCreate, CompatibilityOut
+from app.models import Product, ProductCarCompatibility, Category, PartManufacturer, Car, CarModel
+from app.schemas import ProductCreate, ProductUpdate, ProductOut, CompatibilityCreate, CompatibilityOut, CarOut
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -105,6 +105,17 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
 
 
 # ── Compatibility ─────────────────────────────────────────────────────────────
+
+@router.get("/{product_id}/compatibility", response_model=list[CarOut])
+async def get_product_compatibility(product_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Car)
+        .options(selectinload(Car.model).selectinload(CarModel.brand))
+        .join(ProductCarCompatibility, Car.car_id == ProductCarCompatibility.car_id)
+        .where(ProductCarCompatibility.product_id == product_id)
+    )
+    return result.scalars().all()
+
 
 @router.post("/{product_id}/compatibility", response_model=CompatibilityOut, status_code=201, dependencies=[Depends(require_admin)])
 async def add_compatibility(product_id: int, data: CompatibilityCreate, db: AsyncSession = Depends(get_db)):
