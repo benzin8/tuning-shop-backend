@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, get_current_user, require_admin
 from app.models import Order, OrderItem, OrderStatus, Product, User
-from app.schemas import OrderCreate, OrderOut, OrderStatusUpdate
+from app.schemas import OrderCreate, OrderOut, OrderStatusUpdate, OrderStatusOut
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -76,6 +76,12 @@ async def create_order(
 
     await db.commit()
     return await _fetch_order(order.order_id, db)
+
+
+@router.get("/statuses", response_model=list[OrderStatusOut])
+async def list_statuses(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(OrderStatus))
+    return result.scalars().all()
 
 
 @router.get("/my", response_model=list[OrderOut])
