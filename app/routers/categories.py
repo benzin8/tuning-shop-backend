@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, require_admin
-from app.models import Category, PartManufacturer
+from app.models import Category, PartManufacturer, Product
 from app.schemas import CategoryCreate, CategoryOut, ManufacturerCreate, ManufacturerOut
 
 router = APIRouter(tags=["Catalog"])
@@ -32,6 +32,15 @@ async def delete_category(category_id: int, db: AsyncSession = Depends(get_db)):
     cat = result.scalar_one_or_none()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Check if there are products associated with this category
+    prod_check = await db.execute(select(Product.product_id).where(Product.category_id == category_id).limit(1))
+    if prod_check.scalar() is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete category because it has associated products"
+        )
+
     await db.delete(cat)
     await db.commit()
 
@@ -59,5 +68,14 @@ async def delete_manufacturer(manufacturer_id: int, db: AsyncSession = Depends(g
     mfr = result.scalar_one_or_none()
     if not mfr:
         raise HTTPException(status_code=404, detail="Manufacturer not found")
+    
+    # Check if there are products associated with this manufacturer
+    prod_check = await db.execute(select(Product.product_id).where(Product.manufacturer_id == manufacturer_id).limit(1))
+    if prod_check.scalar() is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete manufacturer because it has associated products"
+        )
+
     await db.delete(mfr)
     await db.commit()
