@@ -103,6 +103,7 @@ class Product(Base):
     image_url: Mapped[str | None] = mapped_column(String(500))
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     stock_quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    is_active: Mapped[bool] = mapped_column(default=True, server_default="true", nullable=False)
 
     category: Mapped["Category"] = relationship("Category", back_populates="products")
     manufacturer: Mapped["PartManufacturer"] = relationship("PartManufacturer", back_populates="products")

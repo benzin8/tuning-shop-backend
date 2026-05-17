@@ -36,6 +36,18 @@ async def _run_migrations() -> None:
                 "requires_gibdd BOOLEAN NOT NULL DEFAULT FALSE"
             ))
 
+        res2 = await conn.execute(text(
+            "SELECT COUNT(*) FROM information_schema.columns "
+            "WHERE table_schema = DATABASE() "
+            "AND table_name = 'products' "
+            "AND column_name = 'is_active'"
+        ))
+        if not res2.scalar():
+            await conn.execute(text(
+                "ALTER TABLE products ADD COLUMN "
+                "is_active BOOLEAN NOT NULL DEFAULT TRUE"
+            ))
+
 
 async def seed() -> None:
     await _run_migrations()
