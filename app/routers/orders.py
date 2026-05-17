@@ -31,8 +31,7 @@ async def create_order(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Resolve default status (first status or "pending")
-    status_result = await db.execute(select(OrderStatus).limit(1))
+    status_result = await db.execute(select(OrderStatus).where(OrderStatus.status_name == "pending"))
     default_status = status_result.scalar_one_or_none()
     if not default_status:
         raise HTTPException(status_code=500, detail="No order statuses configured")
