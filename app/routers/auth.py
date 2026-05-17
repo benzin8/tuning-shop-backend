@@ -19,7 +19,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
         select(User).where((User.email == data.email) | (User.username == data.username))
     )
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email or username already taken")
+        raise HTTPException(status_code=400, detail="Email или имя пользователя уже занято")
 
     role_result = await db.execute(select(Role).where(Role.role_name == DEFAULT_ROLE_NAME))
     role = role_result.scalar_one_or_none()
@@ -37,7 +37,7 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     )
     db.add(user)
     await db.commit()
-    await db.refresh(user, ["role"])
+    await db.refresh(user, ["role", "created_at"])
     return user
 
 
