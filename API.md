@@ -110,7 +110,7 @@ username=string&password=string
 { "role_id": 1 }
 ```
 
-Роли: `1` = admin, `2` = customer.
+> `role_id` берётся из `GET /roles/` — не хардкодить числа, ID зависит от порядка создания в БД.
 
 **Response 200:** `UserOut`
 
@@ -149,7 +149,7 @@ username=string&password=string
 {
   "category_id": 1,
   "manufacturer_id": 1,
-  "sku": "string",
+  "sku": "string | null",
   "product_name": "string",
   "description": "string | null",
   "image_url": "string | null",
@@ -157,6 +157,8 @@ username=string&password=string
   "stock_quantity": 0
 }
 ```
+
+> `sku` необязателен — если не указать, генерируется автоматически в формате `{CAT}-{MFR}-{UUID8}`, например `SUS-KYB-A1B2C3D4`.
 
 **Response 201:** `ProductOut`
 
@@ -210,7 +212,7 @@ username=string&password=string
 ]
 ```
 
-> Роли создаются автоматически при старте сервера. `role_id: 1` = admin, `role_id: 2` = customer.
+> Роли создаются автоматически при старте сервера. Конкретные ID зависят от состояния БД — всегда получайте актуальные ID через этот эндпоинт.
 
 ---
 
@@ -234,6 +236,31 @@ username=string&password=string
 
 ### DELETE /categories/{category_id} 🔒👑
 Удалить категорию. Только admin.
+
+**Response 204**
+
+---
+
+## Manufacturers
+
+### GET /manufacturers/
+Список производителей запчастей.
+
+**Response 200:** `ManufacturerOut[]`
+
+---
+
+### POST /manufacturers/ 🔒👑
+Создать производителя. Только admin.
+
+**Body:** `{ "manufacturer_name": "string" }`
+
+**Response 201:** `ManufacturerOut`
+
+---
+
+### DELETE /manufacturers/{manufacturer_id} 🔒👑
+Удалить производителя. Только admin.
 
 **Response 204**
 
@@ -280,6 +307,13 @@ username=string&password=string
 
 ---
 
+### GET /cars/{car_id}
+Получить автомобиль по ID.
+
+**Response 200:** `CarOut`
+
+---
+
 ### POST /cars/ 🔒👑
 Создать автомобиль.
 
@@ -294,6 +328,13 @@ username=string&password=string
 ```
 
 **Response 201:** `CarOut`
+
+---
+
+### DELETE /cars/{car_id} 🔒👑
+Удалить автомобиль. Только admin.
+
+**Response 204**
 
 ---
 
@@ -360,6 +401,14 @@ username=string&password=string
   "phone": "string | null",
   "role": { "role_id": 1, "role_name": "admin" },
   "created_at": "2024-01-01T00:00:00"
+}
+```
+
+### ManufacturerOut
+```json
+{
+  "manufacturer_id": 1,
+  "manufacturer_name": "string"
 }
 ```
 
