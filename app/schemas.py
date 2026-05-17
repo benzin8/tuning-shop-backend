@@ -230,6 +230,7 @@ class ServiceOut(BaseModel):
     price_from: Decimal | None
     duration: str | None
     category: str | None
+    requires_gibdd: bool
     model_config = {"from_attributes": True}
 
 

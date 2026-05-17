@@ -167,6 +167,7 @@ class Service(Base):
     price_from: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     duration: Mapped[str | None] = mapped_column(String(100))
     category: Mapped[str | None] = mapped_column(String(100))
+    requires_gibdd: Mapped[bool] = mapped_column(default=False, server_default="false", nullable=False)
 
     requests: Mapped[list["ServiceRequest"]] = relationship("ServiceRequest", back_populates="service")
 
